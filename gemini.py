@@ -10,6 +10,6 @@ client = genai.Client(api_key=api_key)
 def gemini_query(query: str):
     response = client.models.generate_content(
     model="gemini-2.5-flash",
-    contents=f"Trata de responder en menos de 1800 caracteres a este texto: {query}",
+    contents=f"Responde obligatoriamente en menos de 1800 caracteres a este texto: {query}",
     )
     return response.text
