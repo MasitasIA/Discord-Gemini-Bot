@@ -19,7 +19,14 @@ async def gemini(interaction: discord.Interaction, query: str):
     await interaction.response.defer()
     answer = gemini_query(query)
     if answer:
-        await interaction.followup.send(f"Respuesta de Gemini a: {query} \n{answer}")
+        try:
+            full_response = f"Respuesta de Gemini a: {query} \n{answer}"
+            if len(full_response) > 2000:
+                await interaction.followup.send("No puedo responder a esa pregunta porque el texto es demasiado largo.")
+            else:
+                await interaction.followup.send(full_response)
+        except Exception:
+            await interaction.followup.send("No puedo responder a esa pregunta.")
     else:
         await interaction.followup.send("No se pudo obtener una respuesta de Gemini.")
 
