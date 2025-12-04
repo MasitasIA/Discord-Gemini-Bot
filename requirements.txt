@@ -1,0 +1,4 @@
+google-generativeai
+discord.py
+python-dotenv
+google-genai
