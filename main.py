@@ -14,12 +14,12 @@ async def on_ready():
     await bot.tree.sync()
     print(f"Logueado como {bot.user}, (ID: {bot.user.id})")
 
-@bot.tree.command()
-async def gemini(interaction: discord.Interaction, query: str):
+@bot.tree.command(name="gemini", description="Consulta a la IA de Gemini.")
+async def gemini(interaction: discord.Interaction, pregunta: str):
     await interaction.response.defer()
-    answer = gemini_query(query)
+    answer = gemini_query(pregunta)
     if answer:
-        full_response = f"Respuesta de Gemini a: {query} \n{answer}"
+        full_response = f"Respuesta de Gemini a: {pregunta} \n{answer}"
         if len(full_response) <= 2000:
             await interaction.followup.send(full_response)
         else:
