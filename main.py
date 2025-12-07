@@ -4,9 +4,12 @@ from gemini import gemini_query
 import os
 from dotenv import load_dotenv
 from datetime import datetime
+import aiohttp
 
 load_dotenv()
 token = os.getenv("DISCORD_TOKEN")
+# --- CLAVE PARA INFIP (GHOSTBOT) --- ELIMINAR SI NO SE USA ---
+INFIP_KEY = os.getenv("INFIP_KEY")
 
 bot = commands.Bot(intents=discord.Intents.all(), command_prefix="!")
 
@@ -86,6 +89,54 @@ async def gemini_embed(interaction: discord.Interaction, pregunta: str):
         await interaction.followup.send(embed=embed, view=BotonReintentar())
     else:
         await interaction.followup.send("No se pudo obtener una respuesta de Gemini.")
+
+# --- COMANDO PARA GENERAR IMAGEN CON GHOSTBOT --- ELIMINAR SI NO SE USA ---
+@bot.tree.command(name="generar_imagen", description="Genera una imagen usando GhostBot.")
+async def generar_imagen(interaction: discord.Interaction, prompt: str):
+    await interaction.response.defer()
+
+    url = "https://api.infip.pro/v1/images/generations"
+    
+    headers = {
+        "Authorization": f"Bearer {INFIP_KEY}",
+        "Content-Type": "application/json"
+    }
+    
+    payload = {
+        "model": "img3", 
+        "prompt": prompt,
+        "n": 1,
+        "size": "1024x1024"
+    }
+
+    async with aiohttp.ClientSession() as session:
+        try:
+            async with session.post(url, headers=headers, json=payload) as response:
+                
+                if response.status == 200:
+                    data = await response.json()
+                    
+                    try:
+                        image_url = data['data'][0]['url']
+                        embed = discord.Embed(
+                            title="✨ Imagen Generada",
+                            description=f"**Prompt:** {prompt}",
+                            color=0xE040FB
+                        )
+                        embed.set_image(url=image_url)
+                        embed.set_footer(text="Generado vía Infip")
+                        
+                        await interaction.followup.send(embed=embed)
+                        
+                    except KeyError:
+                        await interaction.followup.send("⚠️ La API respondió, pero no pude leer la imagen.")
+                
+                else:
+                    error_msg = await response.text()
+                    await interaction.followup.send(f"❌ Error de la API ({response.status}): {error_msg}")
+
+        except Exception as e:
+            await interaction.followup.send(f"❌ Error de conexión: {str(e)}")
 
 #--- TOKEN ---
 bot.run(token)
